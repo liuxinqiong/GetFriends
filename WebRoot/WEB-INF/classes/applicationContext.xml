@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  
+      http://www.springframework.org/schema/beans/spring-beans-3.1.xsd  
+      http://www.springframework.org/schema/context  
+      http://www.springframework.org/schema/context/spring-context.xsd  
+      http://www.springframework.org/schema/mvc  
+      http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
+
+	<!-- 启动注解驱动的Spring MVC功能，注册请求url和注解POJO类方法的映射 -->
+	<mvc:annotation-driven />
+
+	<context:component-scan base-package="cn.com.* " />
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- viewClass：JstlView表示JSP模板页面需要使用JSTL标签库，classpath中必须包含jstl的相关jar 包； -->
+		<property name="viewClass"
+			value="org.springframework.web.servlet.view.JstlView" />
+		<!-- prefix 和suffix：查找视图页面的前缀和后缀（前缀[逻辑视图名]后缀），比如传进来的逻辑视图名为hello，则该该 jsp视图页面应该存放在“WEB-INF/jsp/hello.jsp”； -->
+		<property name="prefix" value="/WEB-INF/jsp/" />
+		<!-- -->
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+
+	<!-- 数据库连接池对象 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver">
+		</property>
+		<property name="url" value="jdbc:oracle:thin:@localhost:1521:orcl">
+		</property>
+		<property name="username" value="scott"></property>
+		<property name="password" value="tiger"></property>
+	</bean>
+
+	<!-- 工厂 spring提供的依赖注入，用来创建mybatis 数据工厂 -->
+	<bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation"
+			value="classpath:cn/com/config_mybatis/Configuration.xml"></property>
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<!-- 数据层对象 -->
+	<bean id="mf_userDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="cn.com.dao.Mf_userDaoInf"></property>
+		<property name="sqlSessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	<bean id="mf_newDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="cn.com.dao.Mf_newDaoInf"></property>
+		<property name="sqlSessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	<bean id="mf_commentDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="cn.com.dao.Mf_commentDaoInf"></property>
+		<property name="sqlSessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	<bean id="mf_activityDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="cn.com.dao.Mf_activityDaoInf"></property>
+		<property name="sqlSessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	<bean id="mf_joinDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="cn.com.dao.Mf_joinDaoInf"></property>
+		<property name="sqlSessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	<bean id="mf_messageDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="cn.com.dao.Mf_messageDaoInf"></property>
+		<property name="sqlSessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	<bean id="mf_wordDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="cn.com.dao.Mf_wordDaoInf"></property>
+		<property name="sqlSessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	<!-- 业务对象 -->
+	<bean id="mf_userService" class="cn.com.service.Mf_userService">
+		<property name="mf_userDao" ref="mf_userDao"></property>
+	</bean>
+
+	<bean id="mf_newService" class="cn.com.service.Mf_newService">
+		<property name="mf_newDao" ref="mf_newDao"></property>
+		<property name="mf_wordDao" ref="mf_wordDao"></property>
+	</bean>
+
+	<bean id="mf_commentService" class="cn.com.service.Mf_commentService">
+		<property name="mf_commentDao" ref="mf_commentDao"></property>
+	</bean>
+
+	<bean id="mf_activityService" class="cn.com.service.Mf_activityService">
+		<property name="mf_activityDao" ref="mf_activityDao"></property>
+	</bean>
+
+	<bean id="mf_joinService" class="cn.com.service.Mf_joinService">
+		<property name="mf_joinDao" ref="mf_joinDao"></property>
+	</bean>
+
+	<bean id="mf_messageService" class="cn.com.service.Mf_messageService">
+		<property name="mf_messageDao" ref="mf_messageDao"></property>
+	</bean>
+
+	<bean id="mf_wordService" class="cn.com.service.Mf_wordService">
+		<property name="mf_wordDao" ref="mf_wordDao"></property>
+	</bean>
+</beans>

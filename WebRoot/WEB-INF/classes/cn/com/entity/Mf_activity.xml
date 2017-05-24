@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.com.dao.Mf_activityDaoInf">
+
+	<insert id="insertActivity" parameterType="cn.com.entity.Mf_activity">
+	<![CDATA[
+	insert into mf_activities (activity_id, ower_id, create_date, address, max_num, topic, content)
+	values (to_char(sysdate,'yyyymmdd')||lpad(seq_mf_activities.nextval,8,0), #{owner_id.user_id}, sysdate,#{address},#{max_num}, #{topic}, #{content})
+	]]>
+	</insert>
+
+	<select id="selOneUser" parameterType="java.lang.String"
+		resultType="cn.com.entity.Mf_user">
+	<![CDATA[
+		select * from mf_users where user_id=#{user_id}
+	]]>
+	</select>
+
+
+	<select id="selectActivity" resultMap="activityMap">
+	select * from(
+	select t.*,rownum as rn from(
+		select a.activity_id as a_activity_id,
+		ower_id,
+		create_date,
+		end_date,
+		a.address as a_address,
+		max_num,
+		a.state as a_state,
+		topic,
+		content,
+		current_num,
+		u.user_id as u_user_id,
+		u.user_name as u_user_name,
+		u.password as u_password,
+		u.email as u_email,
+		u.school as u_school,
+		u.address as u_address,
+		u.sex as u_sex,
+		u.state as u_state,
+		u.birthday as
+		u_birthday,
+		u.telephone as u_telephone,
+		u.picture_url as u_picture_url,
+		j.activity_id as j_activity_id,
+		j.joiner_id as j_joiner_id,
+		j.joiner_time as j_joiner_time,
+		u2.*
+		from mf_activities a, mf_users
+		u,mf_joins j,mf_users u2
+		where u.user_id = ower_id
+		and
+		a.activity_id=j.activity_id(+)
+		<if test="helper.state!=2">
+			and a.state = #{helper.state}
+		</if>
+		and j.joiner_id=u2.user_id(+)
+		<if test="helper.flag ==1">
+			and a.ower_id=#{helper.user.user_id}
+		</if>
+		order by create_date desc) t where rownum &lt;#{end})
+		where rn &gt;#{start}
+	</select>
+	
+	<select id="countAllForActivity" parameterType="cn.com.entity.JoinHelper"
+		resultType="int">
+		select count(*)
+		from mf_activities a, mf_users
+		u,mf_joins j,mf_users u2
+		where u.user_id = ower_id
+		and
+		a.activity_id=j.activity_id(+)
+		<if test="state!=2">
+			and a.state = #{state}
+		</if>
+		and j.joiner_id=u2.user_id(+)
+		<if test="flag ==1">
+			and a.ower_id=#{user.user_id}
+		</if>
+	</select>
+	
+
+	<select id="selectActivityById" parameterType="java.lang.String" resultMap="activityMap">
+	 select a.activity_id as a_activity_id,
+		ower_id,
+		create_date,
+		end_date,
+		a.address as a_address,
+		max_num,
+		a.state as a_state,
+		topic,
+		content,
+		current_num,
+		u.user_id as u_user_id,
+		u.user_name as u_user_name,
+		u.password as u_password,
+		u.email as u_email,
+		u.school as u_school,
+		u.address as u_address,
+		u.sex as u_sex,
+		u.state as u_state,
+		u.birthday as
+		u_birthday,
+		u.telephone as u_telephone,
+		u.picture_url as u_picture_url,
+		j.activity_id as j_activity_id,
+		j.joiner_id as j_joiner_id,
+		j.joiner_time as j_joiner_time,
+		u2.*
+		from mf_activities a, mf_users
+		u,mf_joins j,mf_users u2
+		where u.user_id = ower_id
+		and a.activity_id=j.activity_id(+)
+		and j.joiner_id=u2.user_id(+)
+		and  a.activity_id=#{_parameter}
+	</select>
+	
+	
+	<select id="selectActivityByJoinerId" resultMap="activityMap">
+	select * from(
+	 select t.*,rownum as rn from(
+	 select a.activity_id as a_activity_id,
+		ower_id,
+		create_date,
+		end_date,
+		a.address as a_address,
+		max_num,
+		a.state as a_state,
+		topic,
+		content,
+		current_num,
+		u.user_id as u_user_id,
+		u.user_name as u_user_name,
+		u.password as u_password,
+		u.email as u_email,
+		u.school as u_school,
+		u.address as u_address,
+		u.sex as u_sex,
+		u.state as u_state,
+		u.birthday as
+		u_birthday,
+		u.telephone as u_telephone,
+		u.picture_url as u_picture_url,
+		j.activity_id as j_activity_id,
+		j.joiner_id as j_joiner_id,
+		j.joiner_time as j_joiner_time,
+		u2.*
+		from mf_activities a, mf_users
+		u,mf_joins j,mf_users u2
+		where u.user_id = ower_id
+		and a.activity_id=j.activity_id(+)
+		and j.joiner_id=u2.user_id(+)
+		and  a.activity_id in (select activity_id from mf_joins where joiner_id=#{helper.user.user_id})
+		order by create_date desc) t where rownum &lt;#{end})
+		where rn &gt; #{start} 
+	</select>
+	
+	<select id="countAllForActivityByJoinerId" parameterType="cn.com.entity.JoinHelper" resultType="int">
+	 select count(*)
+		from mf_activities a, mf_users
+		u,mf_joins j,mf_users u2
+		where u.user_id = ower_id
+		and a.activity_id=j.activity_id(+)
+		and j.joiner_id=u2.user_id(+)
+		and  a.activity_id in (select activity_id from mf_joins where joiner_id=#{user.user_id})
+	</select>
+	
+	<resultMap type="cn.com.entity.Mf_activity" id="activityMap">
+		<id property="activity_id" column="a_activity_id" />
+		<result property="create_date" column="create_date" />
+		<result property="end_date" column="end_date" />
+		<result property="address" column="a_address" />
+		<result property="max_num" column="max_num" />
+		<result property="state" column="a_state" />
+		<result property="topic" column="topic" />
+		<result property="content" column="content" />
+		<result property="current_num" column="current_num" />
+		<association property="owner_id" column="ower_id"
+			javaType="cn.com.entity.Mf_user">
+			<id property="user_id" column="u_user_id" />
+			<result property="user_name" column="u_user_name" />
+			<result property="password" column="u_password" />
+			<result property="email" column="u_email" />
+			<result property="school" column="u_school" />
+			<result property="address" column="u_address" />
+			<result property="sex" column="u_sex" />
+			<result property="state" column="u_state" />
+			<result property="birthday" column="u_birthday" />
+			<result property="telephone" column="u_telephone" />
+			<result property="picture_url" column="u_picture_url" />
+		</association>
+		<collection property="joiners" javaType="java.util.List"
+			ofType="cn.com.entity.JoinHelper" column="a_activity_id">
+			<id property="joiner_id" column="j_joiner_id" />
+			<result property="joiner_time" column="j_joiner_time" />
+			<association property="user" javaType="cn.com.entity.Mf_user"
+				resultMap="userMap">
+			</association>
+		</collection>
+	</resultMap>
+
+	<resultMap type="cn.com.entity.Mf_user" id="userMap">
+		<id property="user_id" column="user_id" />
+		<result property="user_name" column="user_name" />
+		<result property="password" column="password" />
+		<result property="email" column="email" />
+		<result property="school" column="school" />
+		<result property="address" column="address" />
+		<result property="sex" column="sex" />
+		<result property="state" column="state" />
+		<result property="birthday" column="birthday" />
+		<result property="telephone" column="telephone" />
+		<result property="picture_url" column="picture_url" />
+	</resultMap>
+
+	<select id="selJoinersByActivity" parameterType="cn.com.entity.Mf_activity"
+		resultMap="joinHelperMap">
+		select * from mf_joins j,mf_users u where
+		j.activity_id=#{activity_id} and j.joiner_id=u.user_id order by
+		joiner_time desc
+	</select>
+
+	<resultMap type="cn.com.entity.JoinHelper" id="joinHelperMap">
+		<id property="joiner_id" column="joiner_id" />
+		<result property="joiner_time" column="joiner_time" />
+		<association property="user" resultMap="userMap"
+			javaType="cn.com.entity.Mf_user">
+		</association>
+	</resultMap>
+
+	<update id="updateActivity" parameterType="cn.com.entity.Mf_activity">
+		update mf_activities
+		<set>
+			<if test="owner_id!=null">
+			ower_id = #{owner_id.user_id},
+			</if>
+			<if test="create_date!=null">
+			create_date = #{create_date},
+			</if>
+			<if test="end_date!=null">
+			end_date = #{end_date},
+			</if>
+			<if test="address!=null">
+			address = #{address},
+			</if>
+			<if test="max_num!=null">
+			max_num = #{max_num},
+			</if>
+			<if test="state!=null">
+			state = #{state},
+			</if>
+			<if test="topic!=null">
+			topic = #{topic},
+			</if>
+			<if test="content!=null">
+			content = #{content},
+			</if>
+			<if test="current_num!=null">
+			current_num = #{current_num},
+			</if>
+		</set>
+		where activity_id = #{activity_id}
+	</update>
+
+</mapper>

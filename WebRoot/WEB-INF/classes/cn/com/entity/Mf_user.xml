@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.com.dao.Mf_userDaoInf">
+
+	<select id="selAllUsers" resultType="cn.com.entity.Mf_user">
+	<![CDATA[
+		select * from mf_users
+	]]>
+	</select>
+
+	<select id="selectUser" resultType="cn.com.entity.Mf_user"
+		parameterType="cn.com.entity.Mf_user">
+	<![CDATA[
+		select * from mf_users where email=#{email} and password=#{password}
+	]]>
+	</select>
+
+	<insert id="insertPrimaryUser" parameterType="cn.com.entity.Mf_user">
+	<![CDATA[
+	insert into mf_users(user_id,user_name,password,email,picture_url) values(to_char(sysdate,'yyyymmdd')||lpad(seq_mf_users.nextval,8,0),#{user_name},#{password},#{email},#{picture_url})
+	]]>
+	</insert>
+
+	<select id="selUsersByKey" resultType="cn.com.entity.Mf_user">
+
+		select * from mf_users u where
+		<if test="flag==0">
+			not exists (select 1 from mf_friends where u.user_id=friend_id and
+			my_id=#{user.user_id})
+		</if>
+		<if test="flag==1">
+			exists (select 1 from mf_friends where u.user_id=friend_id and
+			my_id=#{user.user_id})
+		</if>
+		and (user_name like '%${key}%' or email like '%${key}%' or school like
+		'%${key}%' or address like '%${key}%' )
+	</select>
+
+	<insert id="addFriend" parameterType="cn.com.entity.Mf_friend">
+	<![CDATA[
+	insert into mf_friends(my_id,friend_id) (select #{my_id},#{friend_id} from dual union select #{friend_id},#{my_id} from dual)
+	]]>
+	</insert>
+
+	<select id="selectUserByEmail" parameterType="cn.com.entity.Mf_user"
+		resultType="cn.com.entity.Mf_user">
+		select * from mf_users where email=#{email}
+	</select>
+
+	<select id="selFndpwd" parameterType="cn.com.entity.Mf_fndpwd"
+		resultType="cn.com.entity.Mf_fndpwd">
+		select * from mf_fndpwd where email=#{email}
+	</select>
+
+	<insert id="insertFndpwd" parameterType="cn.com.entity.Mf_fndpwd">
+	<![CDATA[
+	insert into mf_fndpwd values(#{email},#{secretKey},#{timestamp})
+	]]>
+	</insert>
+
+	<update id="updateFndpwd" parameterType="cn.com.entity.Mf_fndpwd">
+	<![CDATA[
+	update mf_fndpwd set secretKey=#{secretKey},timestamp=#{timestamp} where email=#{email}
+	]]>
+	</update>
+
+	<update id="updateUser" parameterType="cn.com.entity.Mf_user">
+		update mf_users
+		<set>
+			<if test="user_name!=null">
+				user_name = #{user_name},
+			</if>
+			<if test="password!=null">
+				password = #{password},
+			</if>
+			<if test="email!=null">
+				email = #{email},
+			</if>
+			<if test="school!=null">
+				school = #{school},
+			</if>
+			<if test="address!=null">
+				address = #{address},
+			</if>
+			<if test="sex!=null">
+				sex= #{sex},
+			</if>
+			<if test="state!=null">
+				state = #{state},
+			</if>
+			<if test="birthday!=null">
+				birthday = to_date(#{birthday},'yyyy-mm-dd'),
+			</if>
+			<if test="telephone!=null">
+				telephone =#{telephone},
+			</if>
+			<if test="picture_url!=null">
+				picture_url = #{picture_url},
+			</if>
+		</set>
+		where user_id = #{user_id}
+	</update>
+</mapper>

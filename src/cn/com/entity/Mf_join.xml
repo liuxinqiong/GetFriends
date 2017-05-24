@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.com.dao.Mf_joinDaoInf">
+
+	<insert id="insertJoin" parameterType="cn.com.entity.Mf_join">
+	<![CDATA[
+	insert into mf_joins (activity_id, joiner_id, joiner_time)
+    values (#{activity_id.activity_id}, #{joiner_id.user_id}, sysdate)
+	]]>
+	</insert>
+	
+	<delete id="deleteJoiner" parameterType="cn.com.entity.Mf_join">
+	delete mf_joins where activity_id=#{activity_id.activity_id} and joiner_id=#{joiner_id.user_id}
+	</delete>
+</mapper>

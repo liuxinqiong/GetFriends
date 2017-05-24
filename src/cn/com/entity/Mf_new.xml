@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.com.dao.Mf_newDaoInf">
+
+	<insert id="insertPrimaryNew" parameterType="cn.com.entity.Mf_new">
+	<![CDATA[
+	insert into mf_news(new_id,ower_id,create_date,content_text,picture_url,video_url) values(to_char(sysdate,'yyyymmdd')||lpad(seq_mf_news.nextval,8,0),#{ower_id.user_id},sysdate,#{content_text},#{picture_url},#{video_url})
+	]]>
+	</insert>
+
+	<select id="selFriendsByUser" resultMap="userMap">
+	
+	select * from(
+	select u.*,f.my_id,f.friend_id,t.*,rownum as rn from mf_users u, mf_friends f,
+       (select user_id     as o_user_id,
+               user_name   as o_user_name,
+               password    as o_password,
+               email       as o_email,
+               school      as o_school,
+               address     as o_address,
+               sex         as o_sex,
+               state       as o_state,
+               birthday    as o_birthday,
+               telephone   as o_telephone,
+               picture_url as o_picture_url
+          from mf_users
+         where user_id = #{user.user_id}) t
+ 	where u.user_id = f.friend_id and f.my_id = #{user.user_id}
+ 	and rownum &lt;#{end})
+ 	where rn &gt;#{start}
+	
+	</select>
+	
+	<select id="countAllForFriends" parameterType="cn.com.entity.Mf_user"
+		resultType="int">
+	<![CDATA[
+	select count(*) from mf_users u, mf_friends f,
+       (select user_id     as o_user_id,
+               user_name   as o_user_name,
+               password    as o_password,
+               email       as o_email,
+               school      as o_school,
+               address     as o_address,
+               sex         as o_sex,
+               state       as o_state,
+               birthday    as o_birthday,
+               telephone   as o_telephone,
+               picture_url as o_picture_url
+          from mf_users
+         where user_id = #{user_id}) t
+ 	where u.user_id = f.friend_id and f.my_id = #{user_id}
+	]]>
+	</select>
+	
+	<resultMap id="userMap" type="cn.com.entity.Mf_user">
+		<id property="user_id" column="o_user_id"/>	
+		<result property="user_name" column="o_user_name"/>	
+		<result property="password" column="o_password"/>	
+		<result property="email" column="o_email"/>	
+		<result property="school" column="o_school"/>	
+		<result property="address" column="o_address"/>	
+		<result property="sex" column="o_sex"/>	
+		<result property="state" column="o_state"/>	
+		<result property="birthday" column="o_birthday"/>	
+		<result property="telephone" column="o_telephone"/>	
+		<result property="picture_url" column="o_picture_url"/>	
+		<result property="user_name" column="o_user_name"/>
+		<collection property="friends" column="friend_id" javaType="java.util.List" ofType="cn.com.entity.Mf_user">
+			<id property="user_id" column="user_id"/>	
+			<result property="user_name" column="user_name"/>	
+			<result property="password" column="password"/>	
+			<result property="email" column="email"/>	
+			<result property="school" column="school"/>	
+			<result property="address" column="address"/>	
+			<result property="sex" column="sex"/>	
+			<result property="state" column="state"/>	
+			<result property="birthday" column="birthday"/>	
+			<result property="telephone" column="telephone"/>	
+			<result property="picture_url" column="picture_url"/>	
+		</collection >
+	</resultMap>
+	
+	
+	
+	<select id="selectNewsByUser" resultMap="newMap">
+	select * from(
+	select t.*,rownum as rn from(
+	select user_id,
+       user_name,
+       password,
+       email,
+       school,
+       address,
+       sex,
+       state,
+       birthday,
+       telephone,
+       u.picture_url as u_picture_url,
+       new_id,
+       ower_id,
+       create_date,
+       content_text,
+       n.picture_url,
+       video_url,
+       comment_num
+  	from mf_news n, mf_users u
+ 	where user_id = ower_id
+ 	<if test="self==1">
+ 	   	and ower_id in (select friend_id from mf_friends where my_id = #{user.user_id} union select #{user.user_id} from dual)
+ 	</if>
+ 	<if test="self==0">
+ 		and ower_id=#{user.user_id}
+ 	</if>
+ 	<if test="self==2">
+ 		and exists(select 1 from mf_comments where  new_id=n.new_id and commenter_id=#{user.user_id})
+ 	</if>
+ 	order by create_date desc) t where rownum &lt; #{end})
+ 	where rn &gt; #{start} 
+	</select>
+	
+	<select id="countAllForNews" resultType="int">
+	select count(*)
+  	from mf_news n, mf_users u
+ 	where user_id = ower_id
+ 	<if test="self==1">
+ 	   	and ower_id in (select friend_id from mf_friends where my_id = #{user.user_id} union select #{user.user_id} from dual)
+ 	</if>
+ 	<if test="self==0">
+ 		and ower_id=#{user.user_id}
+ 	</if>
+ 	<if test="self==2">
+ 	and exists(select 1 from mf_comments where  new_id=n.new_id and commenter_id=#{user.user_id})
+ 	</if>
+	</select>
+	
+	<resultMap id="newMap" type="cn.com.entity.Mf_new">
+		<id property="new_id" column="new_id"/>
+		<result property="create_date" column="create_date"/>
+		<result property="content_text" column="content_text"/>
+		<result property="picture_url" column="picture_url"/>
+		<result property="video_url" column="video_url"/>
+		<result property="comment_num" column="comment_num"/>						
+		<association property="ower_id" column="ower_id" javaType="cn.com.entity.Mf_user">
+			<id property="user_id" column="user_id"/>	
+			<result property="user_name" column="user_name"/>	
+			<result property="password" column="password"/>	
+			<result property="email" column="email"/>	
+			<result property="school" column="school"/>	
+			<result property="address" column="address"/>	
+			<result property="sex" column="sex"/>	
+			<result property="state" column="state"/>	
+			<result property="birthday" column="birthday"/>	
+			<result property="telephone" column="telephone"/>	
+			<result property="picture_url" column="u_picture_url"/>	
+		</association>
+	</resultMap>
+</mapper>

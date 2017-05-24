@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.com.dao.Mf_messageDaoInf">
+
+	<insert id="insertMessage" parameterType="cn.com.entity.Mf_message">
+	<![CDATA[
+	insert into mf_messages
+  	(message_id, from_id, to_id, content, type,create_date)
+	values
+  	(to_char(sysdate,'yyyymmdd')||lpad(seq_mf_messages.nextval,8,0), #{from_id.user_id}, #{to_id.user_id}, #{content}, #{type},sysdate)	
+	]]>
+	</insert>
+
+	<select id="selectMessage" resultMap="messageMap">
+		select * from(
+		select t.*,rownum as rn from (
+		select m.*,
+		u1.*,
+		u2.user_id as to_user_id,
+		u2.user_name
+		as to_user_name,
+		u2.password as to_password,
+		u2.email as to_email,
+		u2.school as
+		to_school,
+		u2.address as to_address,
+		u2.sex as to_sex,
+		u2.state as
+		to_state,
+		u2.birthday as to_birthday,
+		u2.telephone as
+		to_telephone,
+		u2.picture_url as to_picture_url
+		from
+		mf_messages m, mf_users u1,
+		mf_users u2
+		where m.from_id = u1.user_id
+		and
+		m.to_id = u2.user_id
+		and
+		to_id=#{user.user_id}
+		<if test="type!=-1">
+			and type like concat(#{type},'%')
+		</if>
+		<if test="isRead!=-1">
+			and isRead=#{isRead}
+		</if>
+		order by create_date desc) t where rownum &lt;#{end})
+		where rn &gt;#{start} 
+	</select>
+
+	<select id="countAllForMessage" resultType="int">	
+		select count(*)
+		from
+		mf_messages m, mf_users u1,
+		mf_users u2
+		where m.from_id = u1.user_id
+		and
+		m.to_id = u2.user_id
+		and
+		to_id=#{user.user_id}
+		<if test="type!=-1">
+			and type like concat(#{type},'%')
+		</if>
+		<if test="isRead!=-1">
+			and isRead=#{isRead}
+		</if>
+	</select>
+
+	<resultMap type="cn.com.entity.Mf_message" id="messageMap">
+		<id property="message_id" column="message_id" />
+		<result property="content" column="content" />
+		<result property="type" column="type" />
+		<result property="create_date" column="create_date" />
+		<result property="isRead" column="isRead" />
+		<result property="isDeal" column="isDeal" />
+		<association property="from_id" javaType="cn.com.entity.Mf_user"
+			resultMap="userMap"></association>
+		<association property="to_id" javaType="cn.com.entity.Mf_user">
+			<id property="user_id" column="to_user_id" />
+			<result property="user_name" column="to_user_name" />
+			<result property="password" column="to_password" />
+			<result property="email" column="to_email" />
+			<result property="school" column="to_school" />
+			<result property="address" column="to_address" />
+			<result property="sex" column="to_sex" />
+			<result property="state" column="to_state" />
+			<result property="birthday" column="to_birthday" />
+			<result property="telephone" column="to_telephone" />
+			<result property="picture_url" column="to_picture_url" />
+		</association>
+	</resultMap>
+
+	<resultMap type="cn.com.entity.Mf_user" id="userMap">
+		<id property="user_id" column="user_id" />
+		<result property="user_name" column="user_name" />
+		<result property="password" column="password" />
+		<result property="email" column="email" />
+		<result property="school" column="school" />
+		<result property="address" column="address" />
+		<result property="sex" column="sex" />
+		<result property="state" column="state" />
+		<result property="birthday" column="birthday" />
+		<result property="telephone" column="telephone" />
+		<result property="picture_url" column="picture_url" />
+	</resultMap>
+
+	<update id="updateMessage" parameterType="cn.com.entity.Mf_message">
+		update mf_messages
+		<set>
+			<if test="from_id!=null">
+				from_id = #{from_id.user_id},
+			</if>
+			<if test="to_id!=null">
+				to_id = #{to_id.user_id},
+			</if>
+			<if test="content!=null">
+				content = #{content},
+			</if>
+			<if test="type!=null">
+				type = #{type},
+			</if>
+			<if test="create_date!=null">
+				create_date = #{create_date},
+			</if>
+			<if test="isRead!=null">
+				isRead = #{isRead},
+			</if>
+			<if test="isDeal!=null">
+				isDeal = #{isDeal},
+			</if>
+		</set>
+		<where>
+			<if test="message_id!=null">
+				message_id = #{message_id}
+			</if>
+			<if test="to_id!=null">
+				to_id=#{to_id.user_id}
+			</if>
+		</where>
+	</update>
+
+</mapper>

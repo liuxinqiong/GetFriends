@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>  
+	<settings>
+		<setting name="lazyLoadingEnabled" value="true"/>
+		<setting name="aggressiveLazyLoading" value="false"/>
+		<setting name="cacheEnabled" value="true"/>
+	</settings>
+	
+    <!-- 
+	<typeAliases >
+		<typeAlias type="cn.com.entity.TestFriend" alias="friend"/>
+	</typeAliases>
+	  
+	
+	<environments default="development">
+		<environment id="development">
+			<transactionManager type="JDBC">
+			</transactionManager>
+			<dataSource type="POOLED">		
+				<property name="driver" value="oracle.jdbc.driver.OracleDriver" />
+				<property name="url" value="jdbc:oracle:thin:@localhost:1521:orcl" />
+				<property name="username" value="scott" />
+				<property name="password" value="tiger" />
+			</dataSource>
+		</environment>
+	</environments>
+
+	  -->
+	<mappers>
+		<mapper resource="cn/com/entity/Mf_user.xml" />
+		<mapper resource="cn/com/entity/Mf_new.xml" />
+		<mapper resource="cn/com/entity/Mf_comment.xml" />
+		<mapper resource="cn/com/entity/Mf_activity.xml" />
+		<mapper resource="cn/com/entity/Mf_join.xml" />
+		<mapper resource="cn/com/entity/Mf_message.xml" />
+		<mapper resource="cn/com/entity/Mf_word.xml" />
+	</mappers>
+	
+</configuration>

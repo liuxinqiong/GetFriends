@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.com.dao.Mf_commentDaoInf">
+	<insert id="insertComment" parameterType="cn.com.entity.Mf_comment">
+	<![CDATA[
+	insert into mf_comments(comment_id, new_id, content, commenter_id, create_date)
+	values (to_char(sysdate,'yyyymmdd')||lpad(seq_mf_comments.nextval,8,0), #{new_id.new_id}, #{content}, #{commenter_id.user_id}, sysdate)
+	]]>
+	</insert>
+	
+	<select id="selCommentByNew" parameterType="cn.com.entity.Mf_new" resultMap="commentMap">
+	<![CDATA[
+	select comment_id,
+       c.new_id      as c_new_id,
+       content,
+       commenter_id,
+       c.create_date as c_create_date,
+       user_id,
+       user_name,
+       password,
+       email,
+       school,
+       address,
+       sex,
+       state,
+       birthday,
+       telephone,
+       u.picture_url as u_picture_url,
+       n.new_id      as n_new_id,
+       ower_id,
+       n.create_date as n_create_date,
+       content_text,
+       n.picture_url as n_picture_url,
+       video_url,
+       comment_num
+  	from mf_comments c, mf_news n, mf_users u
+	where c.new_id = n.new_id and c.commenter_id = u.user_id and c.new_id=#{new_id} order by c.create_date desc
+	]]>
+	</select>
+	
+	<select id="selOneUser" parameterType="java.lang.String" resultType="cn.com.entity.Mf_user">
+	<![CDATA[
+		select * from mf_users where user_id=(select ower_id from mf_news where new_id=#{new_id})
+	]]>
+	</select>
+	
+	<resultMap id="commentMap" type="cn.com.entity.Mf_comment">
+		<id property="comment_id" column="comment_id"/>	
+		<result property="content" column="content"/>	
+		<result property="create_date" column="c_create_date"/>
+		<association property="new_id" column="new_id" javaType="cn.com.entity.Mf_new">
+			<id property="new_id" column="n_new_id"/>
+			<result property="create_date" column="n_create_date"/>
+			<result property="content_text" column="content_text"/>
+			<result property="picture_url" column="n_picture_url"/>
+			<result property="video_url" column="video_url"/>
+			<result property="comment_num" column="comment_num"/>	
+			<association property="ower_id" column="n_new_id" javaType="cn.com.entity.Mf_user" select="selOneUser">
+				<id property="user_id" column="user_id"/>	
+				<result property="user_name" column="user_name"/>	
+				<result property="password" column="password"/>	
+				<result property="email" column="email"/>	
+				<result property="school" column="school"/>	
+				<result property="address" column="address"/>	
+				<result property="sex" column="sex"/>	
+				<result property="state" column="state"/>	
+				<result property="birthday" column="birthday"/>	
+				<result property="telephone" column="telephone"/>	
+				<result property="picture_url" column="picture_url"/>	
+			</association>
+		</association>
+		<association property="commenter_id" column="commenter_id" javaType="cn.com.entity.Mf_user">
+			<id property="user_id" column="user_id"/>	
+			<result property="user_name" column="user_name"/>	
+			<result property="password" column="password"/>	
+			<result property="email" column="email"/>	
+			<result property="school" column="school"/>	
+			<result property="address" column="address"/>	
+			<result property="sex" column="sex"/>	
+			<result property="state" column="state"/>	
+			<result property="birthday" column="birthday"/>	
+			<result property="telephone" column="telephone"/>	
+			<result property="picture_url" column="u_picture_url"/>	
+		</association>
+	</resultMap>
+</mapper>
